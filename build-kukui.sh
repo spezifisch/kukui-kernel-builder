@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 # directories:
 # - ${BASE}/doc/stable-mt - the files in this dir
 # - ${BASE}/source/linux-stable-mt - the kernel sources checked out from gitrepo
@@ -11,10 +11,12 @@
 BASE=`pwd`/../
 PATCH_DIR=${BASE}/linux-mainline-mediatek-mt81xx-kernel
 CONFIG_DIR=${BASE}/kernel-config-options
+OUTPUT_DIR=${BASE}/result/stable-mt
 
-[ -d ${PATCH_DIR} ] || exit 1
-[ -d ${CONFIG_DIR} ] || exit 2
-[ -e scripts/kconfig/merge_config.sh ] || exit 3
+[ -e scripts/kconfig/merge_config.sh ] || ( echo this script needs to be executed from within the linux-5.x.x directory; exit 1 )
+[ -d ${PATCH_DIR} ] || ( echo ${PATCH_DIR} missing; exit 2 )
+[ -d ${CONFIG_DIR} ] || ( echo ${CONFIG_DIR} missing; exit 3 )
+[ -d ${OUTPUT_DIR} ] || mkdir -p ${OUTPUT_DIR}
 
 do_patch() {
     # patches for mt8183/kukui
@@ -86,13 +88,33 @@ do_install() {
     rm -f Image Image.lz4 cmdline bootloader.bin kernel.itb vmlinux.kpart
     # end chromebook special
 
-    cd /boot
     update-initramfs -c -k ${kver}
     #mkimage -A arm64 -O linux -T ramdisk -a 0x0 -e 0x0 -n initrd.img-${kver} -d initrd.img-${kver} uInitrd-${kver}
-    tar cvzf ${BASE}/source/linux-stable-mt/${kver}.tar.gz /boot/Image-${kver} /boot/System.map-${kver} /boot/config-${kver} /boot/dtb-${kver} /boot/initrd.img-${kver} /boot/vmlinux.kpart-${kver} /lib/modules/${kver}
+    tar cvzf ${kver}.tar.gz /boot/Image-${kver} /boot/System.map-${kver} /boot/config-${kver} /boot/dtb-${kver} /boot/initrd.img-${kver} /boot/vmlinux.kpart-${kver} /lib/modules/${kver}
     cp -v ${PATCH_DIR}/config.mt8 ${PATCH_DIR}/config.mt8.old
-    cp -v ${BASE}/source/linux-stable-mt/.config ${PATCH_DIR}/config.mt8
-    cp -v ${BASE}/source/linux-stable-mt/.config ${PATCH_DIR}/config.mt8-${kver}
-    cp -v ${BASE}/source/linux-stable-mt/*.tar.gz ${BASE}/result/stable-mt
+    cp -v .config ${PATCH_DIR}/config.mt8
+    cp -v .config ${PATCH_DIR}/config.mt8-${kver}
+    cp -v *.tar.gz ${OUTPUT_DIR}
 }
+
+case "$1" in
+    patch)
+        do_patch
+        ;;
+    config)
+        set -e
+        do_config
+        ;;
+    build)
+        set -e
+        do_build
+        ;;
+    install)
+        set -e
+        do_install
+        ;;
+    *)
+        echo "Usage: $0 <patch|config|build|install>"
+        ;;
+esac
 
