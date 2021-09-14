@@ -37,7 +37,7 @@ do_patch() {
 do_config() {
     # create kernel config
     export ARCH=arm64
-    ./scripts/kconfig/merge_config.sh -m arch/arm64/configs/defconfig ${CONFIG_DIR}/chromebooks-aarch64.cfg ${CONFIG_DIR}/mediatek.cfg ${CONFIG_DIR}/docker-options.cfg ${CONFIG_DIR}/options-to-remove-generic.cfg ${PATCH_DIR}/misc.cbm/options/options-to-remove-special.cfg ${CONFIG_DIR}/additional-options-generic.cfg ${CONFIG_DIR}/additional-options-aarch64.cfg ${PATCH_DIR}/misc.cbm/options/additional-options-special.cfg ${CONFIG_DIR}/fs.cfg
+    ./scripts/kconfig/merge_config.sh -m arch/arm64/configs/defconfig ${CONFIG_DIR}/cadmium-kukui-y ${CONFIG_DIR}/chromebooks-aarch64.cfg ${CONFIG_DIR}/mediatek.cfg ${CONFIG_DIR}/docker-options.cfg ${CONFIG_DIR}/options-to-remove-generic.cfg ${PATCH_DIR}/misc.cbm/options/options-to-remove-special.cfg ${CONFIG_DIR}/additional-options-generic.cfg ${CONFIG_DIR}/additional-options-aarch64.cfg ${PATCH_DIR}/misc.cbm/options/additional-options-special.cfg ${CONFIG_DIR}/fs.cfg
 
     ( cd ${CONFIG_DIR} ; git rev-parse --verify HEAD ) > ${PATCH_DIR}/misc.cbm/options/kernel-config-options.version
 
