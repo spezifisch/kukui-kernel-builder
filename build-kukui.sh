@@ -1,12 +1,5 @@
-#!/bin/bash
-# directories:
-# - ${BASE}/doc/stable-mt - the files in this dir
-# - ${BASE}/source/linux-stable-mt - the kernel sources checked out from gitrepo
-# - ${BASE}/result/stable-mt - the resulting kernel, modules etc. tar.gz files
-# - ${CONFIG_DIR} - https://github.com/hexdump0815/kernel-config-options
-# name: stb-mt8
-
-# INFO this is for mt8183 based chromebooks - see also readme.cbm
+#!/bin/bash -e
+# kernel build script for mt8183/kukui/lenovo duet
 
 BASE=`pwd`/../
 PATCH_DIR=${BASE}/linux-mainline-mediatek-mt81xx-kernel
@@ -97,25 +90,53 @@ do_install() {
     cp -v *.tar.gz ${OUTPUT_DIR}
 }
 
+do_write() {
+    set -e
+    kver=`make kernelrelease`
+    kpart=/dev/disk/by-partlabel/MMCKernelA
+    knew=/boot/vmlinux.kpart-${kver}
+
+    [ -e ${kpart} ] || ( echo ${kpart} missing; exit 1 )
+    [ -e ${knew} ] || ( echo ${knew} missing. build and install kernel first!; exit 1 )
+
+    echo "Backing up current kernel to /boot/vmlinux.kpart.old"
+    dd if=${kpart} of=/boot/vmlinux.kpart.old
+    echo "Writing ${knew} to MMCKernelA"
+    dd if=${knew} of=${kpart}
+    echo "Success. Reboot to start new kernel."
+}
+
 case "$1" in
     patch)
-        set -e
         do_patch
         ;;
     config)
-        set -e
         do_config
         ;;
     build)
-        set -e
         do_build
         ;;
     install)
-        set -e
         do_install
         ;;
+    write)
+        do_write
+        ;;
     *)
-        echo "Usage: $0 <patch|config|build|install>"
+        echo "Usage: $0 <patch|config|build|install|write>"
+        echo
+        echo "* Backup your current kernel!"
+        echo "* Get a supported kernel from kernel.org (5.13.x)"
+        echo "* Unpack and go into linux-5.13.x directory"
+        echo "* Run this script ($0) from that directory"
+        echo "* Just execute all commands in the given order and you end up with a newly installed kernel"
+        echo
+        echo "Commands:"
+        echo "* $0 patch: Apply kukui (Lenovo Duet) patches to kernel tree"
+        echo "* $0 config: Generate kernel .config file"
+        echo "* $0 build: compile kernel and modules"
+        echo "* sudo $0 install: generate kpart image, copy kernel files to /boot, install modules"
+        echo "* sudo $0 write: write kpart image to MMCKernelA partition (USE WITH CAUTION!)"
         ;;
 esac
 
