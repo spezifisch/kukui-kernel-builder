@@ -101,8 +101,10 @@ do_write() {
 
     echo "Backing up current kernel to /boot/vmlinux.kpart.old"
     dd if=${kpart} of=/boot/vmlinux.kpart.old
+    echo
     echo "Writing ${knew} to MMCKernelA"
     dd if=${knew} of=${kpart}
+    sync
     echo "Success. Reboot to start new kernel."
 }
 
