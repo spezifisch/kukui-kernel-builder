@@ -20,14 +20,14 @@ OUTPUT_DIR=${BASE}/result/stable-mt
 
 do_patch() {
     # patches for mt8183/kukui
-    for i in ${PATCH_DIR}/misc.cbm/patches/5.13.2/mt8183*.patch; do
+    for i in ${PATCH_DIR}/misc.cbm/patches/5.13.16/mt8183*.patch; do
         echo === $i
         patch -p1 < $i
     done
-    for i in ${PATCH_DIR}/misc.cbm/patches/5.13.2/mt81xx*.patch; do
-        echo === $i
-        patch -p1 < $i
-    done
+    #for i in ${PATCH_DIR}/misc.cbm/patches/5.13.16/mt81xx*.patch; do
+    #    echo === $i
+    #    patch -p1 < $i
+    #done
 
     # add additional dts files from v5.14
     cp -v ${PATCH_DIR}/misc.cbm/misc/v5.14-dts/*.dts* arch/arm64/boot/dts/mediatek
@@ -47,7 +47,7 @@ do_config() {
 
 do_build() {
     # build kernel
-    make -j 8 Image dtbs modules
+    make -j 8 vmlinux Image dtbs modules
     cd tools/perf
     make
     cd ../power/cpupower
