@@ -99,6 +99,7 @@ do_install() {
 
 case "$1" in
     patch)
+        set -e
         do_patch
         ;;
     config)
