@@ -11,20 +11,35 @@ OUTPUT_DIR=${BASE}/result/stable-mt
 [ -d ${CONFIG_DIR} ] || ( echo ${CONFIG_DIR} missing; exit 3 )
 [ -d ${OUTPUT_DIR} ] || mkdir -p ${OUTPUT_DIR}
 
-do_patch() {
-    # patches for mt8183/kukui
-    for i in ${PATCH_DIR}/misc.cbm/patches/5.13.16/mt8183*.patch; do
+apply_patches() {
+    for i in $@; do
         echo === $i
         patch -p1 < $i
     done
-    #for i in ${PATCH_DIR}/misc.cbm/patches/5.13.16/mt81xx*.patch; do
-    #    echo === $i
-    #    patch -p1 < $i
-    #done
+}
 
-    # add additional dts files from v5.14
+copy_dts() {
     cp -v ${PATCH_DIR}/misc.cbm/misc/v5.14-dts/*.dts* arch/arm64/boot/dts/mediatek
     patch -p1 < ${PATCH_DIR}/misc.cbm/misc/v5.14-dts/add-v5.14-dts-files.patch
+}
+
+do_patch() {
+    case $(basedir "$PWD") in
+        linux-5.13.*)
+            echo "applying 5.13 patches"
+            apply_patches ${PATCH_DIR}/misc.cbm/patches/5.13.16/mt8183*.patch
+            #apply_patches ${PATCH_DIR}/misc.cbm/patches/5.13.16/mt81xx*.patch
+            copy_dts
+            ;;
+        linux-5.14.*)
+            echo "applying 5.14 patches"
+            apply_patches ${PATCH_DIR}/misc.cbm/patches/5.14.3/mt8183*.patch
+            copy_dts
+            ;;
+        *)
+            echo "unsupported kernel version"
+            ;;
+    esac
 }
 
 do_config() {
