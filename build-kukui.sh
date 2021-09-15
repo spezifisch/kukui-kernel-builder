@@ -33,7 +33,6 @@ do_patch() {
             ;;
         linux-5.14.*)
             echo "applying 5.14 patches"
-            set +e
             apply_patches ${PATCH_DIR}/misc.cbm/patches/5.14.3/mt8183*.patch
             copy_dts
             ;;
