@@ -24,7 +24,7 @@ copy_dts() {
 }
 
 do_patch() {
-    case $(basedir "$PWD") in
+    case $(basename "$PWD") in
         linux-5.13.*)
             echo "applying 5.13 patches"
             apply_patches ${PATCH_DIR}/misc.cbm/patches/5.13.16/mt8183*.patch
@@ -33,6 +33,7 @@ do_patch() {
             ;;
         linux-5.14.*)
             echo "applying 5.14 patches"
+            set +e
             apply_patches ${PATCH_DIR}/misc.cbm/patches/5.14.3/mt8183*.patch
             copy_dts
             ;;
