@@ -33,7 +33,7 @@ do_patch() {
             ;;
         linux-5.14.*)
             echo "applying 5.14 patches"
-            apply_patches ${PATCH_DIR}/misc.cbm/patches/5.14.3/mt8183*.patch
+            apply_patches ${PATCH_DIR}/misc.cbm/patches/5.14.3/*.patch
             copy_dts
             ;;
         *)
@@ -45,7 +45,17 @@ do_patch() {
 do_config() {
     # create kernel config
     export ARCH=arm64
-    ./scripts/kconfig/merge_config.sh -m arch/arm64/configs/defconfig ${CONFIG_DIR}/cadmium-kukui-y ${CONFIG_DIR}/chromebooks-aarch64.cfg ${CONFIG_DIR}/mediatek.cfg ${CONFIG_DIR}/docker-options.cfg ${CONFIG_DIR}/options-to-remove-generic.cfg ${PATCH_DIR}/misc.cbm/options/options-to-remove-special.cfg ${CONFIG_DIR}/additional-options-generic.cfg ${CONFIG_DIR}/additional-options-aarch64.cfg ${PATCH_DIR}/misc.cbm/options/additional-options-special.cfg ${CONFIG_DIR}/fs.cfg
+    case $(basename "$PWD") in
+        linux-5.13.*)
+            ./scripts/kconfig/merge_config.sh -m arch/arm64/configs/defconfig ${CONFIG_DIR}/cadmium-kukui-y ${CONFIG_DIR}/chromebooks-aarch64.cfg ${CONFIG_DIR}/mediatek.cfg ${CONFIG_DIR}/docker-options.cfg ${CONFIG_DIR}/options-to-remove-generic.cfg ${PATCH_DIR}/misc.cbm/options/options-to-remove-special.cfg ${CONFIG_DIR}/additional-options-generic.cfg ${CONFIG_DIR}/additional-options-aarch64.cfg ${PATCH_DIR}/misc.cbm/options/additional-options-special.cfg ${CONFIG_DIR}/fs.cfg
+            ;;
+        linux-5.14.*)
+            ./scripts/kconfig/merge_config.sh -m ${CONFIG_DIR}/cadmium-kukui ${CONFIG_DIR}/fs.cfg
+            ;;
+        *)
+            echo "unsupported kernel version"
+            ;;
+    esac
 
     ( cd ${CONFIG_DIR} ; git rev-parse --verify HEAD ) > ${PATCH_DIR}/misc.cbm/options/kernel-config-options.version
 
